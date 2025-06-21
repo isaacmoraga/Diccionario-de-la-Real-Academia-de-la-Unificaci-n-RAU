@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Diccionario RAU Comunitario</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+      background: #f3f3f3;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, textarea, button {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    #definiciones p {
+      background: #eef;
+      padding: 0.5rem;
+      border-radius: 5px;
+      margin: 0.25rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Diccionario Comunitario RAU</h1>
+  <div class="container">
+    <input id="palabra" placeholder="Palabra a buscar o agregar" />
+    <textarea id="definicion" placeholder="Definición (si vas a agregar)"></textarea>
+    <button onclick="buscar()">🔍 Buscar definiciones</button>
+    <button onclick="agregar()">➕ Agregar definición</button>
+    <div id="definiciones"></div>
+  </div>
+
+  <script>
+    
+const firebaseConfig = {
+  apiKey: "AIzaSyCZvWcAcvxL4y0tpPpGckm17PyL6Z9yjBc",
+  authDomain: "rau-diccionario.firebaseapp.com",
+  projectId: "rau-diccionario",
+  storageBucket: "rau-diccionario.firebasestorage.app",
+  messagingSenderId: "693366724389",
+  appId: "1:693366724389:web:c2ac5edcf1f2e98cb86ccc",
+  measurementId: "G-8P4QJETKVW"
+};
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function buscar() {
+      const palabra = document.getElementById('palabra').value.trim().toLowerCase();
+      const cont = document.getElementById('definiciones');
+      cont.innerHTML = "";
+      if (!palabra) {
+        cont.innerHTML = "⚠️ Escribí una palabra.";
+        return;
+      }
+      const ref = db.collection("diccionario").doc(palabra);
+      const doc = await ref.get();
+      if (!doc.exists) {
+        cont.innerHTML = "❌ Palabra no encontrada.";
+        return;
+      }
+      const defs = doc.data().definiciones || [];
+      cont.innerHTML = defs.map(function(d) { return `<p>• ${d}</p>`; }).join("");
+    }
+
+    async function agregar() {
+      const palabra = document.getElementById('palabra').value.trim().toLowerCase();
+      const definicion = document.getElementById('definicion').value.trim();
+      if (!palabra || !definicion) {
+        alert("⚠️ Escribí la palabra y su definición.");
+        return;
+      }
+      const ref = db.collection("diccionario").doc(palabra);
+      const doc = await ref.get();
+      let defs = [];
+      if (doc.exists) {
+        defs = doc.data().definiciones || [];
+      }
+      defs.push(definicion);
+      await ref.set({ definiciones: defs });
+      document.getElementById('definicion').value = "";
+      alert("✅ Definición agregada.");
+      buscar();
+    }
+  </script>
+</body>
+</html>
