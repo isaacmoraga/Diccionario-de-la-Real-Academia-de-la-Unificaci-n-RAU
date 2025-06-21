@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diccionario de la Real Academia Unificadora (RAU)</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f0f5;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    #buscador, #formulario {
+      max-width: 600px;
+      margin: 1rem auto;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, textarea, button {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    #resultado {
+      margin-top: 1rem;
+      background: #e8f0fe;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Diccionario de la Real Academia Unificadora (RAU)</h1>
+
+  <div id="buscador">
+    <input type="text" id="palabraBusqueda" placeholder="Buscar palabra...">
+    <button onclick="buscarPalabra()">Buscar</button>
+    <div id="resultado"></div>
+  </div>
+
+  <div id="formulario">
+    <h2>Agregar o Editar palabra</h2>
+    <input type="text" id="nuevaPalabra" placeholder="Palabra">
+    <textarea id="definicionPalabra" rows="4" placeholder="Definición"></textarea>
+    <button onclick="guardarPalabra()">Guardar</button>
+  </div>
+
+  <script>
+    let diccionario = JSON.parse(localStorage.getItem('diccionarioRAU')) || {};
+
+    function guardarPalabra() {
+      const palabra = document.getElementById('nuevaPalabra').value.trim().toLowerCase();
+      const definicion = document.getElementById('definicionPalabra').value.trim();
+      if (!palabra || !definicion) {
+        alert('Por favor completa ambos campos.');
+        return;
+      }
+      diccionario[palabra] = definicion;
+      localStorage.setItem('diccionarioRAU', JSON.stringify(diccionario));
+      alert('Palabra guardada correctamente.');
+      document.getElementById('nuevaPalabra').value = '';
+      document.getElementById('definicionPalabra').value = '';
+    }
+
+    function buscarPalabra() {
+      const palabra = document.getElementById('palabraBusqueda').value.trim().toLowerCase();
+      const resultado = document.getElementById('resultado');
+      if (palabra in diccionario) {
+        resultado.innerHTML = `<strong>${palabra}</strong>: ${diccionario[palabra]}`;
+      } else {
+        resultado.innerHTML = 'Palabra no encontrada en el diccionario.';
+      }
+    }
+  </script>
+</body>
+</html>
