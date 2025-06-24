@@ -1,0 +1,107 @@
+
+<!DOCTYPE html><html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diccionario de la Real Academia Unificadora (RAU)</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f0f5;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    #buscador, #formulario {
+      max-width: 600px;
+      margin: 1rem auto;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, textarea, button {
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    #resultado {
+      margin-top: 1rem;
+      background: #e8f0fe;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Diccionario de la Real Academia Unificadora (RAU)</h1>
+  <div id="buscador">
+    <input type="text" id="palabraBusqueda" placeholder="Buscar palabra...">
+    <button onclick="buscarPalabra()">Buscar</button>
+    <div id="resultado"></div>
+  </div>
+  <div id="formulario">
+    <h2>Agregar o Editar palabra</h2>
+    <input type="text" id="nuevaPalabra" placeholder="Palabra">
+    <textarea id="definicionPalabra" rows="4" placeholder="Definición"></textarea>
+    <button onclick="guardarPalabra()">Guardar</button>
+  </div>
+
+  <script>
+    
+const firebaseConfig = {
+  apiKey: "AIzaSyCZvWcAcvxL4y0tpPpGckm17PyL6Z9yjBc",
+  authDomain: "rau-diccionario.firebaseapp.com",
+  projectId: "rau-diccionario",
+  storageBucket: "rau-diccionario.firebasestorage.app",
+  messagingSenderId: "693366724389",
+  appId: "1:693366724389:web:c2ac5edcf1f2e98cb86ccc",
+  measurementId: "G-8P4QJETKVW"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function guardarPalabra() {
+      const palabra = document.getElementById('nuevaPalabra').value.trim().toLowerCase();
+      const definicion = document.getElementById('definicionPalabra').value.trim();
+      if (!palabra || !definicion) {
+        alert('Por favor completa ambos campos.');
+        return;
+      }
+      const ref = db.collection("diccionario").doc(palabra);
+      const doc = await ref.get();
+      let defs = [];
+      if (doc.exists) {
+        defs = doc.data().definiciones || [];
+      }
+      defs.push(definicion);
+      await ref.set({ definiciones: defs });
+      alert('✅ Definición guardada correctamente.');
+      document.getElementById('nuevaPalabra').value = '';
+      document.getElementById('definicionPalabra').value = '';
+    }
+
+    async function buscarPalabra() {
+      const palabra = document.getElementById('palabraBusqueda').value.trim().toLowerCase();
+      const resultado = document.getElementById('resultado');
+      const ref = db.collection("diccionario").doc(palabra);
+      const doc = await ref.get();
+      if (!doc.exists) {
+        resultado.innerHTML = 'Palabra no encontrada en el diccionario.';
+        return;
+      }
+      const defs = doc.data().definiciones || [];
+      resultado.innerHTML = defs.map(d => `<p><strong>${palabra}</strong>: ${d}</p>`).join('');
+    }
+  </script>
+</body>
+</html>
